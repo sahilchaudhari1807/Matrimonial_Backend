@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.matrimony.backend.DTO.LoginResponseDTO;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Service.UserServices;
 
@@ -21,8 +22,12 @@ import com.matrimony.backend.Service.UserServices;
 @CrossOrigin(origins = "*")
 public class UserController {
   
-    @Autowired
-    private UserServices Service;
+    
+    private final UserServices Service;
+    
+    public UserController(UserServices Service) {
+    	this.Service=Service;
+    }
     
      
 	  
@@ -34,7 +39,7 @@ public class UserController {
 		  
 	  }
 	  
-	  @PostMapping("/login")
+	/*  @PostMapping("/login")
 	  public Map<String,String>verify(@RequestBody Users user) {
 		  String token=Service.verify(user);
 		  
@@ -42,6 +47,11 @@ public class UserController {
 		  response.put("token", token);
 		  
 		  return response;
+	  }*/
+	  @PostMapping("/login")
+	  public LoginResponseDTO verify(@RequestBody Users user) {
+
+	      return Service.verify(user);
+
 	  }
-	
 }

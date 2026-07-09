@@ -1,5 +1,8 @@
 package com.matrimony.backend.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -7,59 +10,108 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.matrimony.backend.DTO.LoginResponseDTO;
+import com.matrimony.backend.DTO.MatchDTO;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
 
-
-
 @Service
 public class UserServices {
-	
-	@Autowired 
-	private UserRepo repo;
-	
-	@Autowired
-	private AuthenticationManager authManager;
-	
-	@Autowired
-	private JWTservice jwtservice;
-	
-	private BCryptPasswordEncoder encoder=new BCryptPasswordEncoder(12);
-	
-   public Users register(Users user) {
-	   user.setPassword(encoder.encode(user.getPassword()));
-	return repo.save(user);
-	   
-   }
 
-   
-   
-   
-   // authenticate user and then generate token
-   public String verify(Users user) {
+    // Inject User Repository
+    @Autowired
+    private UserRepo repo;
 
-	    // 🔍 DEBUG LOGS (ADD HERE)
-	    System.out.println("Username from request: " + user.getUsername());
-	    System.out.println("Raw password from request: " + user.getPassword());
+    // Used to authenticate username and password
+    @Autowired
+    private AuthenticationManager authManager;
 
-	    try {
-	        Authentication authentication = authManager.authenticate(
-	            new UsernamePasswordAuthenticationToken(
-	                user.getUsername(),
-	                user.getPassword()
-	            )
-	        );
+    // Used to generate JWT token after successful login
+    @Autowired
+    private JWTservice jwtservice;
 
-	        if (authentication.isAuthenticated()) {
-	            return jwtservice.generateToken(user.getUsername());
-	        }
+    // Encrypt password before storing in database
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-	    } catch (Exception e) {
-	        e.printStackTrace(); // <-- IMPORTANT: see real cause
-	        throw new RuntimeException("invalid username or password");
-	    }
+    
+    // ===========================
+    // REGISTER NEW USER
+    // ===========================
+    public Users register(Users user) {
 
-	    throw new RuntimeException("login failed");
-	}
+        // Check if username already exists
+        boolean isExist = repo.existsByUsername(user.getUsername());
 
+        if (isExist) {
+            throw new RuntimeException("User already exists");
+        }
+
+        // Encrypt password before saving
+        user.setPassword(encoder.encode(user.getPassword()));
+
+        // Save user in database
+        return repo.save(user);
+    }
+
+    
+    // ===========================
+    // LOGIN / VERIFY USER
+    // ===========================
+    public LoginResponseDTO verify(Users user) {
+
+        // Debug logs
+        System.out.println("Username from request: " + user.getUsername());
+        System.out.println("Raw password from request: " + user.getPassword());
+
+        try {
+
+            // Authenticate username and password
+            Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    user.getUsername(),
+                    user.getPassword()
+                )
+            );
+            
+       
+            // If authentication successful
+            if (authentication.isAuthenticated()) {
+            	
+            	/*Frontend sends username
+                ↓
+                UserRepo.findByUsername()
+                ↓
+                Fetches user from USERS table
+                ↓
+                Gets user ID
+                ↓
+                Generates token
+                ↓
+                Returns { token, id }*/
+
+            	Users userId = repo.findByUsername(user.getUsername())
+            	        .orElseThrow(() -> new RuntimeException("User not found"));
+            	Long Id=userId.getId();
+                // Generate JWT token
+                 String token=jwtservice.generateToken(user.getUsername());
+                 
+                 LoginResponseDTO dto=new LoginResponseDTO(
+                		token,Id
+                		 
+                		 );
+                 
+                 return dto;
+            }
+
+        } catch (Exception e) {
+
+            // Print actual error in console
+            e.printStackTrace();
+
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        // If authentication fails
+        throw new RuntimeException("Login failed");
+    }
 }

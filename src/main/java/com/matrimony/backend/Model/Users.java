@@ -12,7 +12,7 @@ public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String username;
     private String password;
@@ -21,18 +21,18 @@ public class Users {
     public Users() {}
 
     // Parameterized constructor
-    public Users(Integer id, String username, String password) {
+    public Users(Long id, String username, String password) {
         this.id = id;
         this.username = username;
         this.password = password;
     }
 
     // Getters & Setters
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
