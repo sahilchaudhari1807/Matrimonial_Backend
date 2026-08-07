@@ -1,12 +1,14 @@
 package com.matrimony.backend.DTO;
 
+import java.time.LocalDateTime;
+
 public class ChatPreviewDTO {
 
     private String chatId;
     private Long otherUserId;
     private String username;
     private String lastMessage;
-    private Long lastMessageTime;
+    private LocalDateTime lastMessageTime;
     private long unreadCount;
 
     public ChatPreviewDTO() {
@@ -17,7 +19,7 @@ public class ChatPreviewDTO {
             Long otherUserId,
             String username,
             String lastMessage,
-            Long lastMessageTime,
+            LocalDateTime lastMessageTime,
             long unreadCount) {
 
         this.chatId = chatId;
@@ -60,11 +62,11 @@ public class ChatPreviewDTO {
         this.lastMessage = lastMessage;
     }
 
-    public Long getLastMessageTime() {
+    public LocalDateTime getLastMessageTime() {
         return lastMessageTime;
     }
 
-    public void setLastMessageTime(Long lastMessageTime) {
+    public void setLastMessageTime(LocalDateTime lastMessageTime) {
         this.lastMessageTime = lastMessageTime;
     }
 

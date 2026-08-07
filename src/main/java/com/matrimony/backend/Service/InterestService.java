@@ -102,9 +102,9 @@ public class InterestService {
     	    Optional<Interest> acceptRequest =
     	            interestRepo.findByFromUserIdAndToUserId(fromUserId, toUserId);
 
-    	    System.out.println("Accept API Hit");
+    	   /* System.out.println("Accept API Hit");
     	    System.out.println("fromUserId = " + fromUserId);
-    	    System.out.println("toUserId = " + toUserId);
+    	    System.out.println("toUserId = " + toUserId);*/
     	    if (acceptRequest.isPresent()) {
 
     	        Interest interest = acceptRequest.get();
@@ -158,9 +158,9 @@ public class InterestService {
     	  matches.addAll(senderMatches);
     	  matches.addAll(ReceiverMatches);
     	  
-    	  System.out.println("senderMatches = " + senderMatches.size());
+    	 /* System.out.println("senderMatches = " + senderMatches.size());
     	  System.out.println("receiverMatches = " + ReceiverMatches.size());
-    	  System.out.println("total matches = " + matches.size());
+    	  System.out.println("total matches = " + matches.size());*/
     	  
     	  for(Interest interest:matches) {
     		  Long OtherUserID;
@@ -201,9 +201,10 @@ public class InterestService {
       public List<IncomingRequestDTO> getIncomingRequest(Long currentUserId){
     	  List<IncomingRequestDTO> result=new ArrayList<>();
     	  List<Interest> PendingInterest=interestRepo.findByStatusAndToUserId("PENDING", currentUserId);
-    	  System.out.println(currentUserId);
+    	
+    	  /*System.out.println(currentUserId);
 		  System.out.println(PendingInterest);
-		  System.out.println(PendingInterest.size());
+		  System.out.println(PendingInterest.size());*/
     	  
     	  for(Interest interest:PendingInterest) {
     		  Long otherUserId = interest.getFromUserId();

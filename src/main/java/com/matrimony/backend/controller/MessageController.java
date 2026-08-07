@@ -42,6 +42,9 @@ public class MessageController {
     
     @PutMapping("/seen/{chatId}/{receiverId}")
     public void markMessage(@PathVariable String chatId,@PathVariable Long receiverId) {
+    	System.out.println("========== REST HIT ==========");
+        System.out.println("ChatId : " + chatId);
+        System.out.println("Receiver : " + receiverId);
     	msgService.markMessagesAsSeen(chatId, receiverId);
     	
     }

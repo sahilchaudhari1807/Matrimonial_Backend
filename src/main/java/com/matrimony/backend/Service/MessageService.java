@@ -4,13 +4,11 @@ import java.util.List;
 
 
 import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
-
-
-
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 
@@ -29,37 +27,23 @@ public class MessageService {
     private final MessageRepo msgRepo;
     private final UserRepo userRepo;
     private final InterestService interestService;
-    public MessageService(MessageRepo msgRepo,UserRepo userRepo,InterestService interestService) {
-    	this.msgRepo=msgRepo;
-    	this.userRepo=userRepo;
-    	this.interestService=interestService;
-    }
-  
-    // =====================================================
-    // Save new message
-    // Only matched users are allowed to chat
-    // =====================================================
-    public Message saveMessage(Message message) {
+    private SimpMessagingTemplate messagingTemplate;
+    public MessageService(
+            MessageRepo msgRepo,
+            UserRepo userRepo,
+            InterestService interestService,
+            SimpMessagingTemplate messagingTemplate) {
 
-    	
-    	
-        // 🔹 Add timestamp
-    	 if(interestService.isMatched(message.getSenderId(),message.getReceiverId())) {
-    	
-    		
-        message.setTimestamp(
-                System.currentTimeMillis()
-        );
-       
-        // 🔹 New message unseen
-        message.setSeen(false);
-
-        // 🔹 Save into database
-        return msgRepo.save(message);
-    	 }else {
-    		 throw new RuntimeException("only matched users can chat");
-    	 }
+        this.msgRepo = msgRepo;
+        this.userRepo = userRepo;
+        this.interestService = interestService;
+        this.messagingTemplate = messagingTemplate;
     }
+   
+
+    // Constructor Injection
+   
+   
 
     // =====================================================
     // Get all messages of a chat
@@ -75,23 +59,30 @@ public class MessageService {
     // Mark unread messages as seen
     // Called when receiver opens chat
     // =====================================================
-	public void markMessagesAsSeen(String chatId,Long receiverId){
-		 List<Message> messages =
-		            msgRepo
-		            .findByChatIdAndReceiverIdAndSeenFalse(
-		                    chatId,
-		                    receiverId
-		            );
+	public void markMessagesAsSeen(String chatId, Long receiverId) {
 
-		    // 🔹 Mark all as seen
-		    for (Message msg : messages) {
+	    // 1. Find all unseen messages for this receiver
+		System.out.println("markMessagesAsSeen called");
+	    List<Message> messages =
+	            msgRepo.findByChatIdAndReceiverIdAndSeenFalse(
+	                    chatId,
+	                    receiverId
+	            );
+	 
 
-		        msg.setSeen(true);
+	    // 2. Mark each message as seen
+	    for (Message msg : messages) {
+	        msg.setSeen(true);
+	    }
 
-		    }
-
-		    // 🔹 Save updated messages
-		    msgRepo.saveAll(messages);
+	    // 3. Save changes to database
+	    msgRepo.saveAll(messages);
+	   // System.out.println("Saved successfully");
+	   
+	    System.out.println("Broadcasting seen update");
+	    
+	  
+	    messagingTemplate.convertAndSend("/topic/seen", messages);
 	}
 	
 	// =====================================================
@@ -123,9 +114,9 @@ public class MessageService {
 			else {
 				Message old_message=latestMessage.get(chat_id);
 				
-				if(msg.getTimestamp()>old_message.getTimestamp()) {
-					latestMessage.put(chat_id, msg);
-				}
+				 if (msg.getTimestamp().isAfter(old_message.getTimestamp())) {
+	                    latestMessage.put(chat_id, msg);
+	                }
 			}
 		}
 			
@@ -137,7 +128,7 @@ public class MessageService {
 			
 			Long otherUserId;
 
-			if (Long.parseLong(parts[0]) == currentUserId) {
+			if (Long.parseLong(parts[0]) == currentUserId.longValue()) {
 			    otherUserId = Long.parseLong(parts[1]);
 			} else {
 			    otherUserId = Long.parseLong(parts[0]);
@@ -156,7 +147,7 @@ public class MessageService {
 		        latestMsg.getChatId(),
 		        otherUserId,
 		        username,
-		        latestMsg.getText(),
+		        latestMsg.getContent(),
 		        latestMsg.getTimestamp(),
 		        unreadCount
 		);
@@ -164,5 +155,34 @@ public class MessageService {
 		 dashboard.add(dto);
 		}
 		return dashboard;
+	}
+	
+	public Message saveMessage(Message message) {
+
+	    if (!interestService.isMatched(
+	            message.getSenderId(),
+	            message.getReceiverId())) {
+
+	        throw new RuntimeException("Only matched users can chat");
+	    }
+
+	    Long senderId = message.getSenderId();
+	    Long receiverId = message.getReceiverId();
+
+	    String chatId;
+
+	    if (senderId < receiverId) {
+	        chatId = senderId + "_" + receiverId;
+	    } else {
+	        chatId = receiverId + "_" + senderId;
+	    }
+
+	    message.setChatId(chatId);
+
+	    message.setTimestamp(LocalDateTime.now());
+
+	    message.setSeen(false);
+
+	    return msgRepo.save(message);
 	}
 }

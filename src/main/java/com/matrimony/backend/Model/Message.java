@@ -1,86 +1,84 @@
 package com.matrimony.backend.Model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-
 public class Message {
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Long id;
 
-	    private String chatId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	    private Long senderId;
+    private String chatId;
 
-	    private Long receiverId;
+    private Long senderId;
 
-	    private String text;
+    private Long receiverId;
 
-	    private Long timestamp;
+    private String content;
 
-	    private boolean seen;
+    private LocalDateTime timestamp;
 
-	    // =========================
-	    // GETTERS AND SETTERS
-	    // =========================
+    private boolean seen;
 
-	    public Long getId() {
-	        return id;
-	    }
+    public Long getId() {
+        return id;
+    }
 
-	    public void setId(Long id) {
-	        this.id = id;
-	    }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	    public String getChatId() {
-	        return chatId;
-	    }
+    public String getChatId() {
+        return chatId;
+    }
 
-	    public void setChatId(String chatId) {
-	        this.chatId = chatId;
-	    }
+    public void setChatId(String chatId) {
+        this.chatId = chatId;
+    }
 
-	    public Long getSenderId() {
-	        return senderId;
-	    }
+    public Long getSenderId() {
+        return senderId;
+    }
 
-	    public void setSenderId(Long senderId) {
-	        this.senderId = senderId;
-	    }
+    public void setSenderId(Long senderId) {
+        this.senderId = senderId;
+    }
 
-	    public Long getReceiverId() {
-	        return receiverId;
-	    }
+    public Long getReceiverId() {
+        return receiverId;
+    }
 
-	    public void setReceiverId(Long receiverId) {
-	        this.receiverId = receiverId;
-	    }
+    public void setReceiverId(Long receiverId) {
+        this.receiverId = receiverId;
+    }
 
-	    public String getText() {
-	        return text;
-	    }
+    public String getContent() {
+        return content;
+    }
 
-	    public void setText(String text) {
-	        this.text = text;
-	    }
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-	    public Long getTimestamp() {
-	        return timestamp;
-	    }
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
 
-	    public void setTimestamp(Long timestamp) {
-	        this.timestamp = timestamp;
-	    }
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	    public boolean isSeen() {
-	        return seen;
-	    }
+    public boolean isSeen() {
+        return seen;
+    }
 
-	    public void setSeen(boolean seen) {
-	        this.seen = seen;
-	    }
+    public void setSeen(boolean seen) {
+        this.seen = seen;
+    }
 }

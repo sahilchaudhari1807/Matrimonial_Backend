@@ -47,8 +47,8 @@ public class UsersService {
 
     // CREATE USER
     public UsersDetail createUser(UsersDetail user,Long currentUserId) {
-    	System.out.println("CREATE USER HIT");
-    	System.out.println("currentUserId = " + currentUserId);
+    /*	System.out.println("CREATE USER HIT");
+    	System.out.println("currentUserId = " + currentUserId); */
     	
     	user.setUserId(currentUserId);  
         return usersRepository.save(user);

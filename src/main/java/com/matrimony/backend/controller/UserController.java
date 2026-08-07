@@ -39,15 +39,7 @@ public class UserController {
 		  
 	  }
 	  
-	/*  @PostMapping("/login")
-	  public Map<String,String>verify(@RequestBody Users user) {
-		  String token=Service.verify(user);
-		  
-		  Map<String,String> response=new HashMap<>();
-		  response.put("token", token);
-		  
-		  return response;
-	  }*/
+	
 	  @PostMapping("/login")
 	  public LoginResponseDTO verify(@RequestBody Users user) {
 

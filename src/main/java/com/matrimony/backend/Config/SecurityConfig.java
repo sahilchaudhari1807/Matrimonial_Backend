@@ -71,9 +71,9 @@ public class SecurityConfig {
                                 "/users/**",
                                 "/GetMatches/**",
                                 "/interests/**",
-                                "/status/**"
+                                "/status/**",
+                                "/ws/**"
                         ).permitAll()
-
                         // Everything else protected
                         .anyRequest().authenticated()
                 )
