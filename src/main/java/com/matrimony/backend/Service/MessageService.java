@@ -4,6 +4,7 @@ import java.util.List;
 
 
 import java.util.Map;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,9 +50,16 @@ public class MessageService {
     // Get all messages of a chat
     // Sorted by oldest to newest
     // =====================================================
-	public List<Message> getMessagesByChatId(String chatId ) {
+	public List<Message> getMessagesByChatId(String chatId ,Long authenticatedUserId) {
 		// TODO Auto-generated method stub
+		String parts[]=chatId.split("_");
 		
+		Long user1=Long.parseLong(parts[0]);
+		Long user2=Long.parseLong(parts[1]);
+		
+		if(!authenticatedUserId.equals(user1) && !authenticatedUserId.equals(user2)) {
+			throw new RuntimeException("you cannot acces others chat");
+		}
 		return msgRepo.findByChatIdOrderByTimestampAsc(chatId);
 	}
 	
@@ -60,9 +68,23 @@ public class MessageService {
     // Called when receiver opens chat
     // =====================================================
 	public void markMessagesAsSeen(String chatId, Long receiverId) {
+		
+		 String[] parts = chatId.split("_");
+
+		    Long user1 = Long.parseLong(parts[0]);
+		    Long user2 = Long.parseLong(parts[1]);
+
+		    if (!receiverId.equals(user1) && !receiverId.equals(user2)) {
+
+		        throw new RuntimeException(
+		                "You cannot access another user's chat"
+		        );
+		    }
 
 	    // 1. Find all unseen messages for this receiver
-		System.out.println("markMessagesAsSeen called");
+	//	System.out.println("markMessagesAsSeen called");
+		
+		
 	    List<Message> messages =
 	            msgRepo.findByChatIdAndReceiverIdAndSeenFalse(
 	                    chatId,
@@ -85,11 +107,64 @@ public class MessageService {
 	    messagingTemplate.convertAndSend("/topic/seen", messages);
 	}
 	
+	
+	public void markMessageAsDelivered(
+	        Long messageId,
+	        Long authenticatedUserId) {
+
+	    System.out.println("markMessageAsDelivered called");
+	    System.out.println("Message ID: " + messageId);
+
+	    Message message = msgRepo.findById(messageId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Message not found"));
+
+	    // Only receiver can mark message as delivered
+	    if (!authenticatedUserId.equals(message.getReceiverId())) {
+
+	        throw new RuntimeException(
+	                "You cannot mark another user's message as delivered"
+	        );
+	    }
+
+	    System.out.println(
+	            "Before delivered: " + message.isDelivered()
+	    );
+
+	    message.setDelivered(true);
+
+	    Message updatedMessage = msgRepo.save(message);
+
+	    System.out.println(
+	            "After delivered: " + updatedMessage.isDelivered()
+	    );
+
+	    messagingTemplate.convertAndSend(
+	            "/topic/delivered",
+	            updatedMessage
+	    );
+	}
 	// =====================================================
     // Get unread message count for a chat
     // =====================================================
-	public long getUnreadCount(String chatId,Long receiverId) {
-		return msgRepo.countByChatIdAndReceiverIdAndSeenFalse(chatId,receiverId);
+	public long getUnreadCount(String chatId, Long receiverId) {
+
+	    // Check that receiver is part of this chat
+	    String[] parts = chatId.split("_");
+
+	    Long user1 = Long.parseLong(parts[0]);
+	    Long user2 = Long.parseLong(parts[1]);
+
+	    if (!receiverId.equals(user1) && !receiverId.equals(user2)) {
+	        throw new RuntimeException(
+	                "You cannot access another user's chat"
+	        );
+	    }
+
+	    return msgRepo.countByChatIdAndReceiverIdAndSeenFalse(
+	            chatId,
+	            receiverId
+	    );
 	}
 
 	  // =====================================================
@@ -180,7 +255,8 @@ public class MessageService {
 	    message.setChatId(chatId);
 
 	    message.setTimestamp(LocalDateTime.now());
-
+	    
+	    message.setDelivered(false);
 	    message.setSeen(false);
 
 	    return msgRepo.save(message);

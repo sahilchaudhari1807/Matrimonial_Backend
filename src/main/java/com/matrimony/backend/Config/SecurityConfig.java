@@ -63,7 +63,7 @@ public class SecurityConfig {
                                 "/messages/**",
                                 "/send"
                         ).authenticated()*/
-                        .requestMatchers(
+                       /* .requestMatchers(
                                 "/messages/**",
                                 "/send",
                                 "/accept",
@@ -73,7 +73,21 @@ public class SecurityConfig {
                                 "/interests/**",
                                 "/status/**",
                                 "/ws/**"
-                        ).permitAll()
+                        ).permitAll()*/
+                        
+                        .requestMatchers(
+                        	    "/messages/**",
+                        	    "/send",
+                        	    "/accept",
+                        	    "/reject",
+                        	    "/users/**",
+                        	    "/GetMatches/**",
+                        	    "/interests/**",
+                        	    "/status/**"
+                        	).authenticated()
+
+                        	.requestMatchers("/ws/**").permitAll()
+                       
                         // Everything else protected
                         .anyRequest().authenticated()
                 )

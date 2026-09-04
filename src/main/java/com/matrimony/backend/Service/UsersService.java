@@ -1,7 +1,7 @@
 package com.matrimony.backend.Service;
+
 import java.util.ArrayList;
 import java.util.List;
-
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,55 +16,87 @@ public class UsersService {
     @Autowired
     private UsersRepository usersRepository;
 
+
+    // =====================================================
     // GET ALL USERS
+    // =====================================================
+
     public List<MatchDTO> getAllUsers() {
-    	List<UsersDetail> users = usersRepository.findAll();
 
-    	List<MatchDTO> result = new ArrayList<>();
-    	
-    	for(UsersDetail user : users) {
+        List<UsersDetail> users = usersRepository.findAll();
 
-    	    MatchDTO dto = new MatchDTO(
-    	        user.getId(),
-    	        user.getName(),
-    	        user.getAge(),
-    	        user.getGender(),
-    	        user.getCity(),
-    	        user.getBio(),
-    	        user.getUserId()
-    	    );
+        List<MatchDTO> result = new ArrayList<>();
 
-    	    result.add(dto);
+        for (UsersDetail user : users) {
+
+            MatchDTO dto = new MatchDTO(
+                    user.getId(),
+                    user.getName(),
+                    user.getAge(),
+                    user.getGender(),
+                    user.getCity(),
+                    user.getBio(),
+                    user.getUserId()
+            );
+
+            result.add(dto);
+        }
+
+        return result;
     }
-    	return result;
-    }
+
+
+    // =====================================================
     // GET USER BY ID
+    // =====================================================
+
     public UsersDetail getUserById(Long id) {
 
         return usersRepository.findByUserId(id)
                 .orElse(null);
     }
 
-    // CREATE USER
-    public UsersDetail createUser(UsersDetail user,Long currentUserId) {
-    /*	System.out.println("CREATE USER HIT");
-    	System.out.println("currentUserId = " + currentUserId); */
-    	
-    	user.setUserId(currentUserId);  
+
+    // =====================================================
+    // CREATE USER PROFILE
+    // =====================================================
+
+    public UsersDetail createUser(
+            UsersDetail user,
+            Long authenticatedUserId) {
+
+        // Never take userId from frontend
+        // Set it using authenticated user
+        user.setUserId(authenticatedUserId);
+
         return usersRepository.save(user);
     }
 
-    // UPDATE USER
+
+    // =====================================================
+    // UPDATE USER PROFILE
+    // =====================================================
+
     public UsersDetail updateUser(
             Long id,
-            UsersDetail updatedUser) {
+            UsersDetail updatedUser,
+            Long authenticatedUserId) {
 
         UsersDetail existingUser =
                 usersRepository.findById(id)
                 .orElse(null);
 
-        if(existingUser == null) {
+        if (existingUser == null) {
             return null;
+        }
+
+        // Make sure this profile belongs
+        // to the logged-in user
+        if (!authenticatedUserId.equals(existingUser.getUserId())) {
+
+            throw new RuntimeException(
+                    "You cannot update another user's profile"
+            );
         }
 
         existingUser.setName(updatedUser.getName());

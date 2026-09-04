@@ -31,47 +31,63 @@ public class InterestService {
     // Prevents self requests and duplicate requests
     // =====================================================
 	
-	public Optional<Interest> sendInterest(Long fromUserId, Long toUserId) {
+	public Optional<Interest> sendInterest(
+	        Long fromUserId,
+	        Long toUserId) {
 
+	    // 1. Prevent sending interest to yourself
 	    if (fromUserId.equals(toUserId)) {
-	        throw new RuntimeException("You cannot send request to yourself");
+	        throw new RuntimeException(
+	                "You cannot send request to yourself"
+	        );
 	    }
 
-	    Optional<Interest> interestObject =
-	            interestRepo.findByFromUserIdAndToUserIdOrFromUserIdAndToUserId(
+	    // 2. Check whether a request already exists
+	    Optional<Interest> existingInterest =
+	            interestRepo
+	                .findByFromUserIdAndToUserIdOrFromUserIdAndToUserId(
 	                    fromUserId,
 	                    toUserId,
 	                    toUserId,
 	                    fromUserId
-	            );
+	                );
 
-	    if (interestObject.isPresent()) {
+	    // 3. If request already exists
+	    if (existingInterest.isPresent()) {
 
-	        Interest interest = interestObject.get();
+	        Interest interest = existingInterest.get();
 
+	        // If previous request was rejected,
+	        // allow user to send it again
 	        if ("REJECTED".equals(interest.getStatus())) {
 
-	            // Update existing rejected request
 	            interest.setFromUserId(fromUserId);
 	            interest.setToUserId(toUserId);
 	            interest.setStatus("PENDING");
 
-	            return Optional.of(interestRepo.save(interest));
+	            return Optional.of(
+	                    interestRepo.save(interest)
+	            );
 	        }
 
-	        throw new RuntimeException("Interest request already exists");
+	        // Otherwise don't create duplicate request
+	        throw new RuntimeException(
+	                "Interest request already exists"
+	        );
 	    }
 
-	    // Create new interest
+	    // 4. Create new request
 	    Interest interest = new Interest();
+
 	    interest.setFromUserId(fromUserId);
 	    interest.setToUserId(toUserId);
 	    interest.setStatus("PENDING");
 
-	    return Optional.of(interestRepo.save(interest));
+	    // 5. Save in database
+	    return Optional.of(
+	            interestRepo.save(interest)
+	    );
 	}
-	
-	
 	
 	 // =====================================================
     // Get all requests sent by current user
@@ -169,11 +185,11 @@ public class InterestService {
     			   System.out.println("OtherUserID = " + OtherUserID);
     		  }else {
     		  OtherUserID=interest.getFromUserId();
-    		  System.out.println("OtherUserID = " + OtherUserID);
+    		 // System.out.println("OtherUserID = " + OtherUserID);
     		  }
     		  
     		  UsersDetail user=userRepo.findByUserId(OtherUserID).orElse(null);
-    		  System.out.println("User = " + user);
+    		//  System.out.println("User = " + user);
     		  if(user!=null) {
     		  MatchDTO dto = new MatchDTO(
     				  user.getId(),
@@ -210,8 +226,8 @@ public class InterestService {
     		  Long otherUserId = interest.getFromUserId();
     		
     		  UsersDetail user=userRepo.findByUserId(otherUserId).orElse(null);
-    		  System.out.println("otherUserId = " + otherUserId);
-    		  System.out.println("user = " + user);
+    		//  System.out.println("otherUserId = " + otherUserId);
+    		//  System.out.println("user = " + user);
     		  if(user!=null) {
     		  IncomingRequestDTO dto=new IncomingRequestDTO(
     				  user.getId(),

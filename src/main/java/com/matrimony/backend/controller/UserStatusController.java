@@ -1,6 +1,6 @@
 package com.matrimony.backend.controller;
 
-import java.util.Optional;
+import java.security.Principal;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,49 +10,110 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.matrimony.backend.Model.UserStatus;
-import com.matrimony.backend.Repo.UserStatusRepo;
+import com.matrimony.backend.Model.Users;
+import com.matrimony.backend.Repo.UserRepo;
 import com.matrimony.backend.Service.UserStatusService;
 
 @RestController
 @RequestMapping("/status")
 public class UserStatusController {
 
-  private final UserStatusService service;
-  
-  public UserStatusController(UserStatusService service) {
-	  this.service=service;
-  }
-	
-	@PutMapping("/online/{userId}/{online}")
-	public void updateOnlineStatus(@PathVariable Long userId,@PathVariable boolean online) {
-		 service.updateOnlineStatus(userId,online);
-	}
-	
-	@GetMapping("/{userId}")
-	public ResponseEntity<UserStatus> getUserStatus(@PathVariable Long userId) {
+    private final UserStatusService service;
+    private final UserRepo userRepo;
 
-		System.out.println("GET STATUS HIT : " + userId);
-		System.out.println("Controller HIT");
-	    UserStatus userStatus = service.getUserStatus(userId).orElse(null);
+    public UserStatusController(
+            UserStatusService service,
+            UserRepo userRepo) {
 
-	    if (userStatus == null) {
-	        return ResponseEntity.notFound().build();
-	    }
+        this.service = service;
+        this.userRepo = userRepo;
+    }
 
-	   /* System.out.println("===== User Status =====");
-	    System.out.println("Id: " + userStatus.getId());
-	    System.out.println("UserId: " + userStatus.getUserId());
-	    System.out.println("Online: " + userStatus.isOnline());
-	    System.out.println("LastSeen: " + userStatus.getLastSeen());
-	    System.out.println("=======================");*/
 
-	    return ResponseEntity.ok(userStatus);
-	}
-	
-	@PutMapping("/lastSeen/{userId}")
-	public void updateLastSeen(@PathVariable Long userId) {
-		service.updateOnlineStatus(userId,false);
-	}
-	
-	
+    // =====================================================
+    // UPDATE ONLINE STATUS
+    // =====================================================
+
+    @PutMapping("/online/{userId}/{online}")
+    public void updateOnlineStatus(
+            @PathVariable Long userId,
+            @PathVariable boolean online,
+            Principal principal) {
+
+        // Get username from authenticated JWT
+        String username = principal.getName();
+
+        // Find logged-in user
+        Users user = userRepo.findByUsername(username)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        // Get actual ID from authenticated user
+        Long authenticatedUserId = user.getId();
+
+        // Make sure user can update only their own status
+        if (!authenticatedUserId.equals(userId)) {
+            throw new RuntimeException(
+                    "You cannot update another user's status"
+            );
+        }
+
+        service.updateOnlineStatus(
+                authenticatedUserId,
+                online
+        );
+    }
+
+
+    // =====================================================
+    // GET USER STATUS
+    // =====================================================
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserStatus> getUserStatus(
+            @PathVariable Long userId) {
+
+        UserStatus userStatus =
+                service.getUserStatus(userId).orElse(null);
+
+        if (userStatus == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(userStatus);
+    }
+
+
+    // =====================================================
+    // UPDATE LAST SEEN
+    // =====================================================
+
+    @PutMapping("/lastSeen/{userId}")
+    public void updateLastSeen(
+            @PathVariable Long userId,
+            Principal principal) {
+
+        // Get username from authenticated JWT
+        String username = principal.getName();
+
+        // Find logged-in user
+        Users user = userRepo.findByUsername(username)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        // Get actual authenticated user ID
+        Long authenticatedUserId = user.getId();
+
+        // Make sure user updates only their own status
+        if (!authenticatedUserId.equals(userId)) {
+            throw new RuntimeException(
+                    "You cannot update another user's status"
+            );
+        }
+
+        service.updateOnlineStatus(
+                authenticatedUserId,
+                false
+        );
+    }
 }

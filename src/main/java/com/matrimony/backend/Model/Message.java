@@ -26,6 +26,8 @@ public class Message {
 
     private boolean seen;
 
+    private boolean delivered;
+    
     public Long getId() {
         return id;
     }
@@ -80,5 +82,13 @@ public class Message {
 
     public void setSeen(boolean seen) {
         this.seen = seen;
+    }
+    
+    public boolean isDelivered() {
+        return delivered;
+    }
+
+    public void setDelivered(boolean delivered) {
+        this.delivered = delivered;
     }
 }

@@ -22,20 +22,20 @@ public class UserStatusService{
 	
 	public void updateOnlineStatus(Long userId, boolean online) {
 
-	    System.out.println("\n========== UPDATE ONLINE STATUS ==========");
+	  /*  System.out.println("\n========== UPDATE ONLINE STATUS ==========");
 
 	    // 1. Method called
 	    System.out.println("Service HIT");
 	    System.out.println("UserId : " + userId);
-	    System.out.println("Online : " + online);
+	    System.out.println("Online : " + online);*/
 
 	    // 2. Fetch from DB
 	    UserStatus status = userRepo.findByUserId(userId).orElse(null);
 
-	    System.out.println("\n===== BEFORE UPDATE =====");
+	   /* System.out.println("\n===== BEFORE UPDATE =====");
 	    System.out.println("UserId   : " + status.getUserId());
 	    System.out.println("Online   : " + status.isOnline());
-	    System.out.println("LastSeen : " + status.getLastSeen());
+	    System.out.println("LastSeen : " + status.getLastSeen());*/
 
 	    if (status == null) {
 
@@ -52,7 +52,7 @@ public class UserStatusService{
 	    // 4. Save
 	    userRepo.save(status);
 
-	    System.out.println("\n===== AFTER SAVE =====");
+	   /* System.out.println("\n===== AFTER SAVE =====");
 	    System.out.println("UserId   : " + status.getUserId());
 	    System.out.println("Online   : " + status.isOnline());
 	    System.out.println("LastSeen : " + status.getLastSeen());
@@ -61,11 +61,11 @@ public class UserStatusService{
 	    System.out.println("\n===== SENDING TO WEBSOCKET =====");
 	    System.out.println("UserId   : " + status.getUserId());
 	    System.out.println("Online   : " + status.isOnline());
-	    System.out.println("LastSeen : " + status.getLastSeen());
+	    System.out.println("LastSeen : " + status.getLastSeen());*/
 
 	    messagingTemplate.convertAndSend("/topic/status", status);
 
-	    System.out.println("========== END ==========\n");
+	   // System.out.println("========== END ==========\n");
 	}
 	
 	public Optional<UserStatus> getUserStatus(Long userId) {
