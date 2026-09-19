@@ -57,11 +57,11 @@ public class UserStatusService{
 	    System.out.println("Online   : " + status.isOnline());
 	    System.out.println("LastSeen : " + status.getLastSeen());
 
-	    // 5. Broadcast
+	     5. Broadcast*/
 	    System.out.println("\n===== SENDING TO WEBSOCKET =====");
 	    System.out.println("UserId   : " + status.getUserId());
 	    System.out.println("Online   : " + status.isOnline());
-	    System.out.println("LastSeen : " + status.getLastSeen());*/
+	    System.out.println("LastSeen : " + status.getLastSeen());
 
 	    messagingTemplate.convertAndSend("/topic/status", status);
 

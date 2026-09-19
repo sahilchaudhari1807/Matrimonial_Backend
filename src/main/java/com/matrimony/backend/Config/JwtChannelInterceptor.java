@@ -1,141 +1,199 @@
 package com.matrimony.backend.Config;
 
 import java.security.Principal;
+import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.matrimony.backend.Service.JWTservice;
 
-
-// This interceptor works like a "filter" for WebSocket/STOMP messages.
-// It allows us to check the JWT when the WebSocket connection is created.
 public class JwtChannelInterceptor implements ChannelInterceptor {
 
-    // We use our existing JWT service to extract and validate JWT.
-    @Autowired
-    private JWTservice jwtService;
+    private final JWTservice jwtService;
 
+    // Constructor injection
+    public JwtChannelInterceptor(JWTservice jwtService) {
+        this.jwtService = jwtService;
+    }
 
-    // preSend() runs BEFORE a STOMP message is processed.
     @Override
     public Message<?> preSend(
             Message<?> message,
             MessageChannel channel) {
 
-
-        // Convert the normal Message into a STOMP-specific accessor.
-        // This allows us to read STOMP commands and headers.
+        // Get STOMP accessor from the message
         StompHeaderAccessor accessor =
-                StompHeaderAccessor.wrap(message);
+                MessageHeaderAccessor.getAccessor(
+                        message,
+                        StompHeaderAccessor.class
+                );
 
+        if (accessor == null) {
 
-        // Check whether this STOMP message is the CONNECT message.
-        //
-        // CONNECT happens when the frontend first establishes
-        // the STOMP/WebSocket connection.
-        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            System.out.println(
+                    "❌ STOMP accessor is NULL"
+            );
 
+            return message;
+        }
 
-            // Get the Authorization header sent by the frontend.
-            //
-            // Frontend sends:
-            // Authorization: Bearer <JWT>
+        System.out.println(
+                "STOMP Command: "
+                + accessor.getCommand()
+        );
+
+        // =====================================================
+        // CONNECT
+        // =====================================================
+
+        if (StompCommand.CONNECT.equals(
+                accessor.getCommand())) {
+
+            // Get JWT from STOMP CONNECT headers
             String authHeader =
-                    accessor.getFirstNativeHeader("Authorization");
-
-
-            // Make sure the Authorization header exists
-            // and starts with "Bearer ".
-            if (authHeader != null &&
-                authHeader.startsWith("Bearer ")) {
-
-
-                // Remove "Bearer " from the beginning.
-                //
-                // Example:
-                // "Bearer abc123"
-                //       ↓
-                // "abc123"
-                String token = authHeader.substring(7);
-
-
-                try {
-
-
-                    // Extract the username from the JWT.
-                    //
-                    // Example:
-                    // JWT → chaitu@gmail.com
-                    String username =
-                            jwtService.extractUserName(token);
-
-
-                    // Validate the JWT.
-                    //
-                    // Our JWT service checks:
-                    // 1. Username matches
-                    // 2. Token is not expired
-                    jwtService.validateToken(
-                            token,
-
-                            // Create UserDetails containing
-                            // the username extracted from JWT.
-                            new org.springframework.security.core.userdetails.User(
-                                    username,
-                                    "",
-                                    new java.util.ArrayList<>()
-                            )
+                    accessor.getFirstNativeHeader(
+                            "Authorization"
                     );
 
+            System.out.println(
+                    "Authorization header present: "
+                    + (authHeader != null)
+            );
 
-                    // Create a Principal representing
-                    // the authenticated WebSocket user.
-                    //
-                    // Principal answers:
-                    // "Who is connected?"
-                    Principal principal =
-                            new UsernamePasswordAuthenticationToken(
-                                    username,
-                                    null,
-                                    new java.util.ArrayList<>()
-                            );
+            // Check Authorization header
+            if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
 
+                System.out.println(
+                        "❌ WebSocket Authorization header missing"
+                );
 
-                    // Attach the Principal to this WebSocket session.
-                    //
-                    // From now on Spring knows:
-                    // "This WebSocket connection belongs to this user."
-                    accessor.setUser(principal);
+                return null;
+            }
 
+            // Remove "Bearer "
+            String token =
+                    authHeader.substring(7);
 
-                    // Debug message to verify authentication worked.
+            try {
+
+                // =================================================
+                // EXTRACT USERNAME
+                // =================================================
+
+                String username =
+                        jwtService.extractUserName(token);
+
+                System.out.println(
+                        "JWT Username: "
+                        + username
+                );
+
+                // =================================================
+                // CREATE USER DETAILS
+                // =================================================
+
+                UserDetails userDetails =
+                        new User(
+                                username,
+                                "",
+                                new ArrayList<>()
+                        );
+
+                // =================================================
+                // VALIDATE JWT
+                // =================================================
+
+                boolean valid =
+                        jwtService.validateToken(
+                                token,
+                                userDetails
+                        );
+
+                if (!valid) {
+
                     System.out.println(
-                            "WebSocket authenticated: " + username
-                    );
-
-
-                } catch (Exception e) {
-
-
-                    // If JWT is invalid, don't allow
-                    // this STOMP CONNECT message to continue.
-                    System.out.println(
-                            "Invalid WebSocket JWT"
+                            "❌ Invalid or expired WebSocket JWT"
                     );
 
                     return null;
                 }
+
+                // =================================================
+                // CREATE PRINCIPAL
+                // =================================================
+
+                Principal principal =
+                        new UsernamePasswordAuthenticationToken(
+                                username,
+                                null,
+                                new ArrayList<>()
+                        );
+
+                // =================================================
+                // ATTACH PRINCIPAL
+                // =================================================
+
+                accessor.setUser(principal);
+
+                System.out.println(
+                        "✅ WebSocket authenticated: "
+                        + username
+                );
+
+                System.out.println(
+                        "✅ Principal set: "
+                        + accessor.getUser()
+                );
+
+                // =================================================
+                // KEEP ACCESSOR MUTABLE
+                // =================================================
+
+                accessor.setLeaveMutable(true);
+
+                // =================================================
+                // RETURN MESSAGE WITH MODIFIED HEADERS
+                // =================================================
+
+                return MessageBuilder.createMessage(
+                        message.getPayload(),
+                        accessor.getMessageHeaders()
+                );
+
+            } catch (Exception e) {
+
+                System.out.println(
+                        "❌ Invalid WebSocket JWT: "
+                        + e.getMessage()
+                );
+
+                e.printStackTrace();
+
+                return null;
             }
         }
 
+        // =====================================================
+        // SUBSCRIBE / SEND / DISCONNECT
+        // =====================================================
 
-        // Continue processing the STOMP message.
+        System.out.println(
+                "Principal for "
+                + accessor.getCommand()
+                + ": "
+                + accessor.getUser()
+        );
+
         return message;
     }
 }

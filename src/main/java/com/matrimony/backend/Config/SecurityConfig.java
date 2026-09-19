@@ -85,6 +85,7 @@ public class SecurityConfig {
                         	    "/interests/**",
                         	    "/status/**"
                         	).authenticated()
+                        //.permitAll()
 
                         	.requestMatchers("/ws/**").permitAll()
                        

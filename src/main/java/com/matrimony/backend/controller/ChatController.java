@@ -96,10 +96,48 @@ public class ChatController {
     }
 
 
+ /*   @MessageMapping("/chat.typing")
+    @SendTo("/topic/typingStatus")
+    public TypingStatus typingStatus(
+            @Payload TypingStatus status,
+            Principal principal) {
+
+        // 1. Get authenticated username
+        String username = principal.getName();
+
+        // 2. Find authenticated user
+        Users user = repo.findByUsername(username)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        // 3. Get actual authenticated user ID
+        Long authenticatedUserId = user.getId();
+
+        // 4. Don't trust senderId from frontend
+        status.setSenderId(authenticatedUserId);
+
+        return status;
+    }*/
     @MessageMapping("/chat.typing")
     @SendTo("/topic/typingStatus")
     public TypingStatus typingStatus(
-            @Payload TypingStatus status) {
+            @Payload TypingStatus status,
+            Principal principal) {
+
+        System.out.println("========== TYPING ==========");
+        System.out.println("Principal: " + principal);
+
+        if (principal == null) {
+            throw new RuntimeException("Principal is NULL");
+        }
+
+        System.out.println("Username: " + principal.getName());
+
+        Users user = repo.findByUsername(principal.getName())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        status.setSenderId(user.getId());
 
         return status;
     }
