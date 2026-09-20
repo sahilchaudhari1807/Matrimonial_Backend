@@ -32,10 +32,10 @@ public class UserStatusService{
 	    // 2. Fetch from DB
 	    UserStatus status = userRepo.findByUserId(userId).orElse(null);
 
-	   /* System.out.println("\n===== BEFORE UPDATE =====");
+	   System.out.println("\n===== BEFORE UPDATE =====");
 	    System.out.println("UserId   : " + status.getUserId());
 	    System.out.println("Online   : " + status.isOnline());
-	    System.out.println("LastSeen : " + status.getLastSeen());*/
+	    System.out.println("LastSeen : " + status.getLastSeen());
 
 	    if (status == null) {
 
@@ -52,12 +52,12 @@ public class UserStatusService{
 	    // 4. Save
 	    userRepo.save(status);
 
-	   /* System.out.println("\n===== AFTER SAVE =====");
+	   System.out.println("\n===== AFTER SAVE =====");
 	    System.out.println("UserId   : " + status.getUserId());
 	    System.out.println("Online   : " + status.isOnline());
 	    System.out.println("LastSeen : " + status.getLastSeen());
 
-	     5. Broadcast*/
+	   //  5. Broadcast
 	    System.out.println("\n===== SENDING TO WEBSOCKET =====");
 	    System.out.println("UserId   : " + status.getUserId());
 	    System.out.println("Online   : " + status.isOnline());

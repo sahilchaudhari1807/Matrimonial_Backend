@@ -31,23 +31,23 @@ public class WebSocketEventListener {
 
         Principal principal = accessor.getUser();
 
-        System.out.println("🔴 DISCONNECT EVENT");
+      //  System.out.println("🔴 DISCONNECT EVENT");
 
         if (principal != null) {
 
             String username = principal.getName();
 
-            System.out.println(
+           /* System.out.println(
                 "Disconnected user: " + username
-            );
+            );*/
 
             // update this user's status to offline
              Users user=userRepo.findByUsername(username).orElse(null);
              if(user!=null) {
             	 Long userId=user.getId();
-                 System.out.println(
+               /*  System.out.println(
                          "🔥 User ID: " + userId
-                 );
+                 );*/
 
                  // Update database → OFFLINE
                  statusService.updateOnlineStatus(
@@ -55,16 +55,16 @@ public class WebSocketEventListener {
                          false
                  );
 
-                 System.out.println(
+                 /*System.out.println(
                          "✅ User marked OFFLINE"
-                 );
+                 );*/
 
              }
              else {
 
-                 System.out.println(
+                 /*System.out.println(
                          "❌ User not found: " + username
-                 );
+                 );*/
              
 
         }

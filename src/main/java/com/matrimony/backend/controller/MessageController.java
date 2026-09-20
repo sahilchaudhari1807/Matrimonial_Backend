@@ -154,16 +154,14 @@ public class MessageController {
             Principal principal) {
 
         String username = principal.getName();
-        System.out.println("🔥 DELIVERED API CALLED");
-        System.out.println("🔥 Username: " + username);
-       // System.out.println("🔥 Message ID: " + messageId);
+      
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
 
         Long authenticatedUserId = user.getId();
-        System.out.println("🔥 Authenticated User ID: " + authenticatedUserId);
+      
 
         // User can only access their own dashboard
         if (!authenticatedUserId.equals(currentUserId)) {
@@ -186,7 +184,7 @@ public class MessageController {
     public void markMessageAsDelivered(
             @PathVariable Long messageId,
             Principal principal) {
-    	   System.out.println("🔥 CONTROLLER REACHED");
+    	  
 
         String username = principal.getName();
 
@@ -195,8 +193,7 @@ public class MessageController {
                         new RuntimeException("User not found"));
 
         Long authenticatedUserId = user.getId();
-        System.out.println("🔥 Authenticated User ID: " + authenticatedUserId);
-        System.out.println("🔥 Message ID: " + messageId);
+       
 
         msgService.markMessageAsDelivered(
                 messageId,

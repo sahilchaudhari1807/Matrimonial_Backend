@@ -38,9 +38,9 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
     	
     	String authHeader = request.getHeader("Authorization");
-    	System.out.println("🔥 JWT FILTER: " 
+    	/*System.out.println("🔥 JWT FILTER: " 
     	        + request.getMethod() + " " 
-    	        + request.getRequestURI());
+    	        + request.getRequestURI());*/
     	if(authHeader!=null && authHeader.startsWith("Bearer ")) {
     		 String token=authHeader.substring(7);
     		 
@@ -55,10 +55,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
     			boolean isValid = jwtService.validateToken(token, userDetails);
 
-    			System.out.println("JWT valid: " + isValid);
+    			//System.out.println("JWT valid: " + isValid);
     			
     			if (isValid) {
-    				System.out.println("✅ JWT AUTHENTICATED: " + username);
+    				//System.out.println("✅ JWT AUTHENTICATED: " + username);
 
     			    UsernamePasswordAuthenticationToken authentication =
     			            new UsernamePasswordAuthenticationToken(
@@ -71,20 +71,20 @@ public class JwtFilter extends OncePerRequestFilter {
     			            .getContext()
     			            .setAuthentication(authentication);
     			    
-    			    System.out.println(
+    			 /*   System.out.println(
     			    	    "Authenticated user: " +
     			    	    SecurityContextHolder.getContext().getAuthentication().getName()
-    			    	);
+    			    	);*/
     			}
     	}
-    	System.out.println(
+    	/*System.out.println(
     		    "🔥 REQUEST: " + request.getMethod() + " " + request.getRequestURI()
     		);
 
     		System.out.println(
     		    "🔥 AUTHENTICATION: " +
     		    SecurityContextHolder.getContext().getAuthentication()
-    		);
+    		);*/
         filterChain.doFilter(request, response);
         return;
     }

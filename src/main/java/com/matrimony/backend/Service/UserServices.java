@@ -60,8 +60,7 @@ public class UserServices {
     public LoginResponseDTO verify(Users user) {
 
         // Debug logs
-        System.out.println("Username from request: " + user.getUsername());
-        System.out.println("Raw password from request: " + user.getPassword());
+        
 
         try {
 

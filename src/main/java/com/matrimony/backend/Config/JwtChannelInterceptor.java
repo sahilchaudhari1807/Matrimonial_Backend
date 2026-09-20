@@ -39,17 +39,17 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
         if (accessor == null) {
 
-            System.out.println(
+         /*   System.out.println(
                     "❌ STOMP accessor is NULL"
-            );
+            );*/
 
             return message;
         }
 
-        System.out.println(
+      /*  System.out.println(
                 "STOMP Command: "
                 + accessor.getCommand()
-        );
+        );*/
 
         // =====================================================
         // CONNECT
@@ -64,18 +64,18 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                             "Authorization"
                     );
 
-            System.out.println(
+          /*  System.out.println(
                     "Authorization header present: "
                     + (authHeader != null)
-            );
+            );*/
 
             // Check Authorization header
             if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
-                System.out.println(
+              /*  System.out.println(
                         "❌ WebSocket Authorization header missing"
-                );
+                );*/
 
                 return null;
             }
@@ -93,10 +93,10 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                 String username =
                         jwtService.extractUserName(token);
 
-                System.out.println(
+             /*   System.out.println(
                         "JWT Username: "
                         + username
-                );
+                );*/
 
                 // =================================================
                 // CREATE USER DETAILS
@@ -121,9 +121,9 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
                 if (!valid) {
 
-                    System.out.println(
+                   /* System.out.println(
                             "❌ Invalid or expired WebSocket JWT"
-                    );
+                    );*/
 
                     return null;
                 }
@@ -145,7 +145,7 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
                 accessor.setUser(principal);
 
-                System.out.println(
+               /* System.out.println(
                         "✅ WebSocket authenticated: "
                         + username
                 );
@@ -153,7 +153,7 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                 System.out.println(
                         "✅ Principal set: "
                         + accessor.getUser()
-                );
+                );*/
 
                 // =================================================
                 // KEEP ACCESSOR MUTABLE
@@ -172,10 +172,10 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
             } catch (Exception e) {
 
-                System.out.println(
+              /*  System.out.println(
                         "❌ Invalid WebSocket JWT: "
                         + e.getMessage()
-                );
+                );*/
 
                 e.printStackTrace();
 
@@ -187,12 +187,12 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         // SUBSCRIBE / SEND / DISCONNECT
         // =====================================================
 
-        System.out.println(
+       /* System.out.println(
                 "Principal for "
                 + accessor.getCommand()
                 + ": "
                 + accessor.getUser()
-        );
+        );*/
 
         return message;
     }

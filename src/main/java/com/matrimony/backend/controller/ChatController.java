@@ -39,9 +39,7 @@ public class ChatController {
         // 1. Get username from authenticated Principal
         String username = principal.getName();
 
-        System.out.println(
-                "Authenticated user: " + username
-        );
+     
 
 
         // 2. Find the authenticated user in database
@@ -54,20 +52,20 @@ public class ChatController {
         // 3. Get actual ID of authenticated user
         Long authenticatedUserId = user.getId();
 
-        System.out.println(
+      /*  System.out.println(
                 "Authenticated User ID: "
                 + authenticatedUserId
-        );
+        );*/
 
 
         // 4. Set sender ID from authenticated user
         //    We DON'T trust senderId from frontend
         message.setSenderId(authenticatedUserId);
 
-        System.out.println(
+       /* System.out.println(
                 "✅ Sender ID set by backend: "
                 + message.getSenderId()
-        );
+        );*/
 
 
         // 5. Save message
@@ -124,14 +122,14 @@ public class ChatController {
             @Payload TypingStatus status,
             Principal principal) {
 
-        System.out.println("========== TYPING ==========");
-        System.out.println("Principal: " + principal);
+       /* System.out.println("========== TYPING ==========");
+        System.out.println("Principal: " + principal);*/
 
         if (principal == null) {
             throw new RuntimeException("Principal is NULL");
         }
 
-        System.out.println("Username: " + principal.getName());
+        //System.out.println("Username: " + principal.getName());
 
         Users user = repo.findByUsername(principal.getName())
                 .orElseThrow(() ->

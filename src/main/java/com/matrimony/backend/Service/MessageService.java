@@ -112,18 +112,18 @@ public class MessageService {
 	        Long messageId,
 	        Long authenticatedUserId) {
 
-	    System.out.println("markMessageAsDelivered called");
+	   /* System.out.println("markMessageAsDelivered called");
 	    System.out.println("Message ID: " + messageId);
-	    System.out.println("Authenticated User ID: " + authenticatedUserId);
+	    System.out.println("Authenticated User ID: " + authenticatedUserId);*/
 
 	    Message message = msgRepo.findById(messageId)
 	            .orElseThrow(() ->
 	                    new RuntimeException("Message not found"));
-	    System.out.println("🔥 Message Receiver ID: " + message.getReceiverId());
+	 /*   System.out.println("🔥 Message Receiver ID: " + message.getReceiverId());
 	    System.out.println("🔥 Message Sender ID: " + message.getSenderId());
 	    
 	    System.out.println("🔥 Authenticated ID: " + authenticatedUserId);
-	    System.out.println("🔥 Receiver ID: " + message.getReceiverId());
+	    System.out.println("🔥 Receiver ID: " + message.getReceiverId());*/
 
 	    // Only receiver can mark message as delivered
 	    if (!authenticatedUserId.equals(message.getReceiverId())) {
@@ -133,17 +133,17 @@ public class MessageService {
 	        );
 	    }
 
-	    System.out.println(
+	   /* System.out.println(
 	            "Before delivered: " + message.isDelivered()
-	    );
+	    );*/
 
 	    message.setDelivered(true);
 
 	    Message updatedMessage = msgRepo.save(message);
 
-	    System.out.println(
+	   /* System.out.println(
 	            "After delivered: " + updatedMessage.isDelivered()
-	    );
+	    );*/
 
 	    messagingTemplate.convertAndSend(
 	            "/topic/delivered",

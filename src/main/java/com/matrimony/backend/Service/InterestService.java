@@ -118,9 +118,7 @@ public class InterestService {
     	    Optional<Interest> acceptRequest =
     	            interestRepo.findByFromUserIdAndToUserId(fromUserId, toUserId);
 
-    	   /* System.out.println("Accept API Hit");
-    	    System.out.println("fromUserId = " + fromUserId);
-    	    System.out.println("toUserId = " + toUserId);*/
+    	   
     	    if (acceptRequest.isPresent()) {
 
     	        Interest interest = acceptRequest.get();

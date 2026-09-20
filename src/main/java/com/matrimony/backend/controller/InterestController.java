@@ -50,9 +50,9 @@ public class InterestController {
         // Get actual logged-in user's ID
         Long fromUserId = user.getId();
 
-        System.out.println(
+        /*System.out.println(
                 "Authenticated user ID: " + fromUserId
-        );
+        );*/
 
         // Send interest
         return service.sendInterest(fromUserId, toUserId);
