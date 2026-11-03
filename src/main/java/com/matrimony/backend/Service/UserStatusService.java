@@ -9,64 +9,45 @@ import com.matrimony.backend.Repo.UserStatusRepo;
 import com.matrimony.backend.Model.UserStatus;
 
 
+/*Your UserStatusService handles two main tasks:
+1. Update a user's online/offline status in the database and broadcast the updated status through WebSocket.
+2. Fetch a user's current status from the database.*/ 
+
 @Service
 public class UserStatusService{
   
 	private final UserStatusRepo userRepo;
-	 private SimpMessagingTemplate messagingTemplate;
+	 private final SimpMessagingTemplate messagingTemplate;
 	
 	public UserStatusService(UserStatusRepo userRepo, SimpMessagingTemplate messagingTemplate) {
 		this.userRepo=userRepo;
 		this.messagingTemplate=messagingTemplate;
 	}
 	
-	public void updateOnlineStatus(Long userId, boolean online) {
 
-	  /*  System.out.println("\n========== UPDATE ONLINE STATUS ==========");
+public void updateOnlineStatus(Long userId, boolean online) {
 
-	    // 1. Method called
-	    System.out.println("Service HIT");
-	    System.out.println("UserId : " + userId);
-	    System.out.println("Online : " + online);*/
+    UserStatus status = userRepo.findByUserId(userId).orElse(null);
 
-	    // 2. Fetch from DB
-	    UserStatus status = userRepo.findByUserId(userId).orElse(null);
+    if (status == null) {
+        status = new UserStatus();
+        status.setUserId(userId);
+    }
 
-	   System.out.println("\n===== BEFORE UPDATE =====");
-	    System.out.println("UserId   : " + status.getUserId());
-	    System.out.println("Online   : " + status.isOnline());
-	    System.out.println("LastSeen : " + status.getLastSeen());
+    status.setOnline(online);
 
-	    if (status == null) {
+    if (!online) {
+        status.setLastSeen(System.currentTimeMillis());
+    }
 
-	        System.out.println("No existing record. Creating new UserStatus.");
+    userRepo.save(status);
 
-	        status = new UserStatus();
-	        status.setUserId(userId);
-	    }
+    System.out.println("BROADCAST STATUS: userId="
+            + userId + " online=" + online);
 
-	    // 3. Update object
-	    status.setOnline(online);
-	    status.setLastSeen(System.currentTimeMillis());
+    messagingTemplate.convertAndSend("/topic/status", status);
+}
 
-	    // 4. Save
-	    userRepo.save(status);
-
-	   System.out.println("\n===== AFTER SAVE =====");
-	    System.out.println("UserId   : " + status.getUserId());
-	    System.out.println("Online   : " + status.isOnline());
-	    System.out.println("LastSeen : " + status.getLastSeen());
-
-	   //  5. Broadcast
-	    System.out.println("\n===== SENDING TO WEBSOCKET =====");
-	    System.out.println("UserId   : " + status.getUserId());
-	    System.out.println("Online   : " + status.isOnline());
-	    System.out.println("LastSeen : " + status.getLastSeen());
-
-	    messagingTemplate.convertAndSend("/topic/status", status);
-
-	   // System.out.println("========== END ==========\n");
-	}
 	
 	public Optional<UserStatus> getUserStatus(Long userId) {
 		System.out.println("Service HIT");

@@ -68,43 +68,56 @@ public class MessageService {
     // Called when receiver opens chat
     // =====================================================
 	public void markMessagesAsSeen(String chatId, Long receiverId) {
-		
-		 String[] parts = chatId.split("_");
 
-		    Long user1 = Long.parseLong(parts[0]);
-		    Long user2 = Long.parseLong(parts[1]);
+	    System.out.println("========== MARK SEEN ==========");
+	    System.out.println("Chat ID: " + chatId);
+	    System.out.println("Receiver ID: " + receiverId);
 
-		    if (!receiverId.equals(user1) && !receiverId.equals(user2)) {
+	    String[] parts = chatId.split("_");
 
-		        throw new RuntimeException(
-		                "You cannot access another user's chat"
-		        );
-		    }
+	    Long user1 = Long.parseLong(parts[0]);
+	    Long user2 = Long.parseLong(parts[1]);
 
-	    // 1. Find all unseen messages for this receiver
-	//	System.out.println("markMessagesAsSeen called");
-		
-		
+	    if (!receiverId.equals(user1) && !receiverId.equals(user2)) {
+	        throw new RuntimeException(
+	                "You cannot access another user's chat"
+	        );
+	    }
+
+	    // Find messages received by this user that are not seen
 	    List<Message> messages =
 	            msgRepo.findByChatIdAndReceiverIdAndSeenFalse(
 	                    chatId,
 	                    receiverId
 	            );
-	 
 
-	    // 2. Mark each message as seen
+	    System.out.println("Messages found: " + messages.size());
+
+	    // Mark messages as seen
 	    for (Message msg : messages) {
+
+	        System.out.println(
+	            "MARKING SEEN -> ID: " + msg.getId()
+	            + " | Content: " + msg.getContent()
+	            + " | Sender: " + msg.getSenderId()
+	            + " | Receiver: " + msg.getReceiverId()
+	            + " | Delivered: " + msg.isDelivered()
+	            + " | Seen: " + msg.isSeen()
+	        );
+
+	        msg.setDelivered(true);
 	        msg.setSeen(true);
 	    }
-
-	    // 3. Save changes to database
+	    // Save updated messages
 	    msgRepo.saveAll(messages);
-	   // System.out.println("Saved successfully");
-	   
+
 	    System.out.println("Broadcasting seen update");
-	    
-	  
-	    messagingTemplate.convertAndSend("/topic/seen", messages);
+
+	    // Broadcast updated messages to all subscribers
+	    messagingTemplate.convertAndSend(
+	            "/topic/seen",
+	            messages
+	    );
 	}
 	
 	
