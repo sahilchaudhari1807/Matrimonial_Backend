@@ -13,6 +13,8 @@ import com.matrimony.backend.Model.UserStatus;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
 import com.matrimony.backend.Service.UserStatusService;
+import com.matrimony.backend.exception.ForbiddenException;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/status")
@@ -46,14 +48,14 @@ public class UserStatusController {
         // Find logged-in user
         Users user = userRepo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         // Get actual ID from authenticated user
         Long authenticatedUserId = user.getId();
 
         // Make sure user can update only their own status
         if (!authenticatedUserId.equals(userId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot update another user's status"
             );
         }
@@ -73,12 +75,9 @@ public class UserStatusController {
     public ResponseEntity<UserStatus> getUserStatus(
             @PathVariable Long userId) {
 
-        UserStatus userStatus =
-                service.getUserStatus(userId).orElse(null);
-
-        if (userStatus == null) {
-            return ResponseEntity.notFound().build();
-        }
+        UserStatus userStatus = service.getUserStatus(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User status not found"));
 
         return ResponseEntity.ok(userStatus);
     }
@@ -99,14 +98,14 @@ public class UserStatusController {
         // Find logged-in user
         Users user = userRepo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         // Get actual authenticated user ID
         Long authenticatedUserId = user.getId();
 
         // Make sure user updates only their own status
         if (!authenticatedUserId.equals(userId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot update another user's status"
             );
         }

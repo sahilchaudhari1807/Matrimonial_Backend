@@ -12,4 +12,5 @@ import com.matrimony.backend.Model.UsersDetail;
 
 public interface UsersRepository extends JpaRepository<UsersDetail, Long> {
 	Optional<UsersDetail> findByUserId(Long userId);
+	boolean existsByUserId(Long userId);
 }

@@ -19,6 +19,9 @@ import com.matrimony.backend.Model.Interest;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
 import com.matrimony.backend.Service.InterestService;
+import com.matrimony.backend.exception.ForbiddenException;
+import com.matrimony.backend.exception.ResourceAlreadyExistsException;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @RestController
 public class InterestController {
@@ -45,7 +48,7 @@ public class InterestController {
         // Find authenticated user in database
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         // Get actual logged-in user's ID
         Long fromUserId = user.getId();
@@ -72,13 +75,13 @@ public class InterestController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         // Don't allow user to request another user's data
         if (!authenticatedUserId.equals(currentUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot access another user's requests");
         }
 
@@ -99,12 +102,12 @@ public class InterestController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         if (!authenticatedUserId.equals(currentUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot access another user's requests");
         }
 
@@ -125,12 +128,12 @@ public class InterestController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         if (!authenticatedUserId.equals(currentUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot access another user's requests");
         }
 
@@ -152,13 +155,13 @@ public class InterestController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         // The logged-in user must be the receiver
         if (!authenticatedUserId.equals(toUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot accept a request for another user");
         }
 
@@ -183,13 +186,13 @@ public class InterestController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         // The logged-in user must be the receiver
         if (!authenticatedUserId.equals(toUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot reject a request for another user");
         }
 
@@ -213,12 +216,12 @@ public class InterestController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         if (!authenticatedUserId.equals(currentUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot access another user's matches");
         }
 
@@ -239,12 +242,12 @@ public class InterestController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         if (!authenticatedUserId.equals(currentUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot access another user's profiles");
         }
 

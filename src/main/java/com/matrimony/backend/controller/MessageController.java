@@ -16,6 +16,8 @@ import com.matrimony.backend.Model.Message;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
 import com.matrimony.backend.Service.MessageService;
+import com.matrimony.backend.exception.ForbiddenException;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/messages")
@@ -49,7 +51,7 @@ public class MessageController {
         // Find authenticated user
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         // Get sender ID from authenticated user
         Long senderId = user.getId();
@@ -71,7 +73,7 @@ public class MessageController {
 
     	    String username=principal.getName();
     	     
-    	    Users user=repo.findByUsername(username).orElseThrow(()->new RuntimeException("user not found"));
+    	    Users user=repo.findByUsername(username).orElseThrow(()->new ResourceNotFoundException("user not found"));
     	    
     	    Long authenticatedUserId=user.getId();
     	    
@@ -94,13 +96,13 @@ public class MessageController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         // Make sure receiverId belongs to logged-in user
         if (!authenticatedUserId.equals(receiverId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot mark another user's messages as seen"
             );
         }
@@ -126,13 +128,13 @@ public class MessageController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
 
         // Make sure receiverId belongs to logged-in user
         if (!authenticatedUserId.equals(receiverId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot access another user's unread count"
             );
         }
@@ -158,14 +160,14 @@ public class MessageController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
       
 
         // User can only access their own dashboard
         if (!authenticatedUserId.equals(currentUserId)) {
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot access another user's dashboard"
             );
         }
@@ -190,7 +192,7 @@ public class MessageController {
 
         Users user = repo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Long authenticatedUserId = user.getId();
        

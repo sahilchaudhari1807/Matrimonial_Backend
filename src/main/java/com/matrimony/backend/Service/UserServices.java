@@ -15,7 +15,10 @@ import com.matrimony.backend.DTO.MatchDTO;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class UserServices {
 
     // Inject User Repository
@@ -39,18 +42,27 @@ public class UserServices {
     // ===========================
     public Users register(Users user) {
 
+    	log.debug("registration started");
         // Check if username already exists
         boolean isExist = repo.existsByUsername(user.getUsername());
+        
 
         if (isExist) {
+        	log.warn("Registration failed: Username already exists");
             throw new RuntimeException("User already exists");
         }
 
         // Encrypt password before saving
         user.setPassword(encoder.encode(user.getPassword()));
+        
+        Users users=repo.save(user);
+        
+        log.info("user is succefully register");
+        
 
         // Save user in database
-        return repo.save(user);
+        return users;
+       
     }
 
     

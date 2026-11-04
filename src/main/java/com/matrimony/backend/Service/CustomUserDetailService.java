@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.matrimony.backend.Model.UserPrincipal;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @Service
 public class CustomUserDetailService implements UserDetailsService {
@@ -18,7 +19,7 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         Users user = repo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return new UserPrincipal(user);
     }

@@ -69,9 +69,9 @@ public class MessageService {
     // =====================================================
 	public void markMessagesAsSeen(String chatId, Long receiverId) {
 
-	    System.out.println("========== MARK SEEN ==========");
+	   /* System.out.println("========== MARK SEEN ==========");
 	    System.out.println("Chat ID: " + chatId);
-	    System.out.println("Receiver ID: " + receiverId);
+	    System.out.println("Receiver ID: " + receiverId);*/
 
 	    String[] parts = chatId.split("_");
 
@@ -96,14 +96,14 @@ public class MessageService {
 	    // Mark messages as seen
 	    for (Message msg : messages) {
 
-	        System.out.println(
+	      /*  System.out.println(
 	            "MARKING SEEN -> ID: " + msg.getId()
 	            + " | Content: " + msg.getContent()
 	            + " | Sender: " + msg.getSenderId()
 	            + " | Receiver: " + msg.getReceiverId()
 	            + " | Delivered: " + msg.isDelivered()
 	            + " | Seen: " + msg.isSeen()
-	        );
+	        );*/
 
 	        msg.setDelivered(true);
 	        msg.setSeen(true);
@@ -111,7 +111,7 @@ public class MessageService {
 	    // Save updated messages
 	    msgRepo.saveAll(messages);
 
-	    System.out.println("Broadcasting seen update");
+	   // System.out.println("Broadcasting seen update");
 
 	    // Broadcast updated messages to all subscribers
 	    messagingTemplate.convertAndSend(

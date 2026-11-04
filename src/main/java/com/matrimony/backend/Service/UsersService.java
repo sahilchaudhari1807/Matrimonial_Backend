@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import com.matrimony.backend.DTO.MatchDTO;
 import com.matrimony.backend.Model.UsersDetail;
 import com.matrimony.backend.Repo.UsersRepository;
+import com.matrimony.backend.exception.ForbiddenException;
+import com.matrimony.backend.exception.ResourceAlreadyExistsException;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @Service
 public class UsersService {
@@ -51,11 +54,10 @@ public class UsersService {
     // =====================================================
 
     public UsersDetail getUserById(Long id) {
-
         return usersRepository.findByUserId(id)
-                .orElse(null);
+                .orElseThrow(() ->
+                    new ResourceNotFoundException("User profile not found"));
     }
-
 
     // =====================================================
     // CREATE USER PROFILE
@@ -65,8 +67,11 @@ public class UsersService {
             UsersDetail user,
             Long authenticatedUserId) {
 
+        if (usersRepository.existsByUserId(authenticatedUserId)) {
+            throw new ResourceAlreadyExistsException("Profile already exists");
+        }
+
         // Never take userId from frontend
-        // Set it using authenticated user
         user.setUserId(authenticatedUserId);
 
         return usersRepository.save(user);
@@ -82,19 +87,15 @@ public class UsersService {
             UsersDetail updatedUser,
             Long authenticatedUserId) {
 
-        UsersDetail existingUser =
-                usersRepository.findById(id)
-                .orElse(null);
-
-        if (existingUser == null) {
-            return null;
-        }
+    	UsersDetail existingUser = usersRepository.findById(id)
+    	        .orElseThrow(() ->
+    	            new ResourceNotFoundException("User profile not found"));
 
         // Make sure this profile belongs
         // to the logged-in user
         if (!authenticatedUserId.equals(existingUser.getUserId())) {
 
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot update another user's profile"
             );
         }

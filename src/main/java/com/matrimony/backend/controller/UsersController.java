@@ -11,6 +11,8 @@ import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Model.UsersDetail;
 import com.matrimony.backend.Repo.UserRepo;
 import com.matrimony.backend.Service.UsersService;
+import com.matrimony.backend.exception.ForbiddenException;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/users")
@@ -63,7 +65,7 @@ public class UsersController {
         Users loggedInUser =
                 userRepo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         // Get ID from authenticated user
         Long authenticatedUserId =
@@ -94,7 +96,7 @@ public class UsersController {
         Users loggedInUser =
                 userRepo.findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         // Get actual authenticated ID
         Long authenticatedUserId =
@@ -104,7 +106,7 @@ public class UsersController {
         // belongs to logged-in user
         if (!authenticatedUserId.equals(id)) {
 
-            throw new RuntimeException(
+            throw new ForbiddenException(
                     "You cannot update another user's profile"
             );
         }

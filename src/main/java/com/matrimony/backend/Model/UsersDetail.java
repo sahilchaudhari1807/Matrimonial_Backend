@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 public class UsersDetail {
 	 @Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	 
+	 
 	    private Long id;
 
 	    private String name;
@@ -19,6 +21,7 @@ public class UsersDetail {
 
 	    private String city;
 
+	    @Column(unique = true, nullable = false)
 	    private Long userId;
 	    // GETTERS AND SETTERS
 

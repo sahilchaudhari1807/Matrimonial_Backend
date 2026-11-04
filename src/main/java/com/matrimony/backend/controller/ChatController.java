@@ -3,6 +3,7 @@ package com.matrimony.backend.controller;
 import java.security.Principal;
 
 
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -13,6 +14,7 @@ import com.matrimony.backend.Model.Message;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
 import com.matrimony.backend.Service.MessageService;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @Controller
 public class ChatController {
@@ -94,28 +96,7 @@ public class ChatController {
     }
 
 
- /*   @MessageMapping("/chat.typing")
-    @SendTo("/topic/typingStatus")
-    public TypingStatus typingStatus(
-            @Payload TypingStatus status,
-            Principal principal) {
-
-        // 1. Get authenticated username
-        String username = principal.getName();
-
-        // 2. Find authenticated user
-        Users user = repo.findByUsername(username)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
-
-        // 3. Get actual authenticated user ID
-        Long authenticatedUserId = user.getId();
-
-        // 4. Don't trust senderId from frontend
-        status.setSenderId(authenticatedUserId);
-
-        return status;
-    }*/
+ 
     @MessageMapping("/chat.typing")
     @SendTo("/topic/typingStatus")
     public TypingStatus typingStatus(
@@ -125,15 +106,16 @@ public class ChatController {
        /* System.out.println("========== TYPING ==========");
         System.out.println("Principal: " + principal);*/
 
-        if (principal == null) {
-            throw new RuntimeException("Principal is NULL");
-        }
+    	if (principal == null) {
+    	    throw new IllegalStateException("WebSocket user is not authenticated");
+    	}
 
         //System.out.println("Username: " + principal.getName());
 
         Users user = repo.findByUsername(principal.getName())
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                       
+                   new ResourceNotFoundException("user not found"));
 
         status.setSenderId(user.getId());
 
