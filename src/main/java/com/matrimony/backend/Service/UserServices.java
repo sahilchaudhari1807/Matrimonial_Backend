@@ -1,19 +1,22 @@
 package com.matrimony.backend.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.matrimony.backend.DTO.LoginResponseDTO;
-import com.matrimony.backend.DTO.MatchDTO;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.UserRepo;
+import com.matrimony.backend.exception.ResourceAlreadyExistsException;
+import com.matrimony.backend.exception.ResourceNotFoundException;
+import com.matrimony.backend.exception.UnauthorizedException;
+
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +37,8 @@ public class UserServices {
     private JWTservice jwtservice;
 
     // Encrypt password before storing in database
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    @Autowired
+    private PasswordEncoder encoder;
 
     
     // ===========================
@@ -49,7 +53,7 @@ public class UserServices {
 
         if (isExist) {
         	log.warn("Registration failed: Username already exists");
-            throw new RuntimeException("User already exists");
+            throw new ResourceAlreadyExistsException("User already exists");
         }
 
         // Encrypt password before saving
@@ -57,7 +61,7 @@ public class UserServices {
         
         Users users=repo.save(user);
         
-        log.info("user is succefully register");
+        log.info("User registration successful");
         
 
         // Save user in database
@@ -71,9 +75,6 @@ public class UserServices {
     // ===========================
     public LoginResponseDTO verify(Users user) {
 
-        // Debug logs
-        
-
         try {
 
             // Authenticate username and password
@@ -83,46 +84,29 @@ public class UserServices {
                     user.getPassword()
                 )
             );
-            
-       
-            // If authentication successful
-            if (authentication.isAuthenticated()) {
-            	
-            	/*Frontend sends username
-                ↓
-                UserRepo.findByUsername()
-                ↓
-                Fetches user from USERS table
-                ↓
-                Gets user ID
-                ↓
-                Generates token
-                ↓
-                Returns { token, id }*/
 
-            	Users userId = repo.findByUsername(user.getUsername())
-            	        .orElseThrow(() -> new RuntimeException("User not found"));
-            	Long Id=userId.getId();
-                // Generate JWT token
-                 String token=jwtservice.generateToken(user.getUsername());
-                 
-                 LoginResponseDTO dto=new LoginResponseDTO(
-                		token,Id
-                		 
-                		 );
-                 
-                 return dto;
+            // Check authentication result
+            if (authentication.isAuthenticated()) {
+
+                Users loggedInUser = repo.findByUsername(user.getUsername())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("User not found"));
+
+                Long id = loggedInUser.getId();
+
+                // Generate JWT
+                String token = jwtservice.generateToken(user.getUsername());
+
+                return new LoginResponseDTO(token, id);
             }
 
-        } catch (Exception e) {
+        } catch (org.springframework.security.core.AuthenticationException e) {
 
-            // Print actual error in console
-            e.printStackTrace();
+            log.warn("Login failed: Invalid credentials");
 
-            throw new RuntimeException("Invalid username or password");
+            throw new UnauthorizedException("Invalid username or password");
         }
 
-        // If authentication fails
-        throw new RuntimeException("Login failed");
+        throw new UnauthorizedException("Login failed");
     }
 }

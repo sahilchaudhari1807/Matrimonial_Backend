@@ -15,6 +15,9 @@ import com.matrimony.backend.Model.Interest;
 import com.matrimony.backend.Model.UsersDetail;
 import com.matrimony.backend.Repo.InterestRepo;
 import com.matrimony.backend.Repo.UsersRepository;
+import com.matrimony.backend.exception.ForbiddenException;
+import com.matrimony.backend.exception.ResourceAlreadyExistsException;
+import com.matrimony.backend.exception.ResourceNotFoundException;
 
 @Service
 public class InterestService {
@@ -37,7 +40,7 @@ public class InterestService {
 
 	    // 1. Prevent sending interest to yourself
 	    if (fromUserId.equals(toUserId)) {
-	        throw new RuntimeException(
+	        throw new ForbiddenException(
 	                "You cannot send request to yourself"
 	        );
 	    }
@@ -71,7 +74,7 @@ public class InterestService {
 	        }
 
 	        // Otherwise don't create duplicate request
-	        throw new RuntimeException(
+	        throw new ResourceAlreadyExistsException(
 	                "Interest request already exists"
 	        );
 	    }
@@ -130,29 +133,35 @@ public class InterestService {
     	        return Optional.of(savedInterest);
     	    }
 
-    	    throw new RuntimeException("Interest request is not present");
+    	    throw new ResourceNotFoundException("Interest request is not present");
     	}
       
    // =====================================================
       // Reject an incoming interest request
       // Changes status from PENDING to REJECTED
       // =====================================================
-      public Optional<Interest> RejectRequest(Long fromUserId,Long toUserId){
-    	  Optional<Interest> RejectRequest=interestRepo.findByFromUserIdAndToUserId(fromUserId, toUserId);
-    	  
-    	  if(RejectRequest.isPresent()) {
-    		  Interest interest=RejectRequest.get();
-    		  
-    		  interest.setStatus("REJECTED");
-    		  
-    		 // interestRepo.save(interest);
-    		  
-    		  return Optional.of(interestRepo.save(interest));
-    	  }
-    	  else {
-    		  throw new RuntimeException("interest request is Rejected");
-    	  }
-      }
+      public Optional<Interest> RejectRequest(Long fromUserId, Long toUserId) {
+
+    	    Optional<Interest> rejectRequest =
+    	            interestRepo.findByFromUserIdAndToUserId(fromUserId, toUserId);
+
+    	    if (rejectRequest.isPresent()) {
+
+    	        Interest interest = rejectRequest.get();
+
+    	        if ("REJECTED".equals(interest.getStatus())) {
+    	            throw new ResourceAlreadyExistsException(
+    	                    "Interest request is already rejected");
+    	        }
+
+    	        interest.setStatus("REJECTED");
+
+    	        return Optional.of(interestRepo.save(interest));
+
+    	    } else {
+    	        throw new ResourceNotFoundException("Interest request not found");
+    	    }
+    	}
       
       // =====================================================
       // Get all accepted matches for current user

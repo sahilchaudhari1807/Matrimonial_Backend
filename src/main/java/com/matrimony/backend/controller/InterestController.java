@@ -177,7 +177,7 @@ public class InterestController {
     // =====================================================
 
     @PutMapping("/reject")
-    public Optional<Interest> rejectRequest(
+    public Optional<Interest> RejectRequest(
             @RequestParam Long fromUserId,
             @RequestParam Long toUserId,
             Principal principal) {

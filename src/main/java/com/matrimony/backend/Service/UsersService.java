@@ -82,22 +82,13 @@ public class UsersService {
     // UPDATE USER PROFILE
     // =====================================================
 
-    public UsersDetail updateUser(
-            Long id,
-            UsersDetail updatedUser,
-            Long authenticatedUserId) {
+    public UsersDetail updateUser(Long id, UsersDetail updatedUser, Long authenticatedUserId) {
 
-    	UsersDetail existingUser = usersRepository.findById(id)
-    	        .orElseThrow(() ->
-    	            new ResourceNotFoundException("User profile not found"));
+        UsersDetail existingUser = usersRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User profile not found"));
 
-        // Make sure this profile belongs
-        // to the logged-in user
         if (!authenticatedUserId.equals(existingUser.getUserId())) {
-
-            throw new ForbiddenException(
-                    "You cannot update another user's profile"
-            );
+            throw new ForbiddenException("You cannot update another user's profile");
         }
 
         existingUser.setName(updatedUser.getName());

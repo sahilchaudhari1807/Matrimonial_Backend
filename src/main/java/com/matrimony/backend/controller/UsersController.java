@@ -89,32 +89,9 @@ public class UsersController {
             @RequestBody UsersDetail user,
             Principal principal) {
 
-        // Get username from JWT
-        String username = principal.getName();
+        Users loggedInUser = userRepo.findByUsername(principal.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Find logged-in user
-        Users loggedInUser =
-                userRepo.findByUsername(username)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
-
-        // Get actual authenticated ID
-        Long authenticatedUserId =
-                loggedInUser.getId();
-
-        // Make sure the profile being updated
-        // belongs to logged-in user
-        if (!authenticatedUserId.equals(id)) {
-
-            throw new ForbiddenException(
-                    "You cannot update another user's profile"
-            );
-        }
-
-        return usersService.updateUser(
-                id,
-                user,
-                authenticatedUserId
-        );
+        return usersService.updateUser(id, user, loggedInUser.getId());
     }
 }
