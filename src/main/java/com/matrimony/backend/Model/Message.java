@@ -1,7 +1,10 @@
 package com.matrimony.backend.Model;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,6 +30,17 @@ public class Message {
     private boolean seen;
 
     private boolean delivered;
+    
+    @ElementCollection
+    private Set<Long> deletedUsers=new HashSet<>();
+    
+    public Set<Long> getDeletedUsers() {
+        return deletedUsers;
+    }
+
+    public void setDeletedUsers(Set<Long> deletedUsers) {
+        this.deletedUsers = deletedUsers;
+    }
     
     public Long getId() {
         return id;

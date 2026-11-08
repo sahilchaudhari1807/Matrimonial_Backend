@@ -3,6 +3,7 @@ package com.matrimony.backend.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import com.matrimony.backend.Model.Message;
 import com.matrimony.backend.Model.Users;
 import com.matrimony.backend.Repo.MessageRepo;
 import com.matrimony.backend.Repo.UserRepo;
+import com.matrimony.backend.exception.AccessDeniedException;
 import com.matrimony.backend.exception.ForbiddenException;
 import com.matrimony.backend.exception.ResourceNotFoundException;
 
@@ -71,6 +73,11 @@ public class MessageService {
 
         List<Message> messages =
                 msgRepo.findByChatIdOrderByTimestampAsc(chatId);
+
+        messages = messages.stream()
+                .filter(message ->
+                        !message.getDeletedUsers().contains(authenticatedUserId))
+                .toList();
 
         log.debug("Retrieved {} messages for chat ID: {}",
                 messages.size(), chatId);
@@ -323,5 +330,24 @@ public class MessageService {
                 savedMessage.getId(), chatId);
 
         return savedMessage;
+    }
+    
+    public void deleteForMe(Long id,Long authenticatedUserId) {
+    	Message messageForDelete=msgRepo.findById(id).orElseThrow(()->{
+    		log.warn("message not found");
+    		throw new ResourceNotFoundException("not found");
+    	});
+    	
+    	if(authenticatedUserId.equals(messageForDelete.getSenderId()) || authenticatedUserId.equals(messageForDelete.getReceiverId()) ) {
+    		 messageForDelete.getDeletedUsers().add(authenticatedUserId);
+
+    		    msgRepo.save(messageForDelete);
+    		
+    	}
+    	else {
+    	  throw new AccessDeniedException("not authorized to access");
+    	}
+    	
+    	
     }
 }

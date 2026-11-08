@@ -3,6 +3,8 @@ package com.matrimony.backend.controller;
 import java.security.Principal;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,8 +21,11 @@ import com.matrimony.backend.Service.MessageService;
 import com.matrimony.backend.exception.ForbiddenException;
 import com.matrimony.backend.exception.ResourceNotFoundException;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/messages")
+@Slf4j
 public class MessageController {
 
     private final MessageService msgService;
@@ -201,5 +206,24 @@ public class MessageController {
                 messageId,
                 authenticatedUserId
         );
+    }
+    
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<Void> deleteMessageForMe(
+            @PathVariable Long messageId,
+            Principal principal) {
+
+        String username = principal.getName();
+
+        Users user = repo.findByUsername(username).orElseThrow(() -> {
+            log.warn("User not found");
+            throw new ResourceNotFoundException("User not found");
+        });
+
+        Long authenticatedUserId = user.getId();
+
+        msgService.deleteForMe(messageId, authenticatedUserId);
+
+        return ResponseEntity.noContent().build();
     }
 }
